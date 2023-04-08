@@ -186,8 +186,6 @@ def expand_network(api, job_dir):
                     except:
                         print(f"Failed to load friends of user {id}")
             return 0
-        else:
-            pass
         return 0
     else:
         expand_network()
