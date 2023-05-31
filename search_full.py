@@ -5,11 +5,17 @@ from constants import FILES_FOLDER_NAME
 from utils.twitter_auth import get_twitter_api
 
 
-def get_users_from_query(api, query, result_type="mixed", max_results=100):
+def get_users_from_query(api, query, label="dev", max_results=100, from_date=None, to_date=None):
     # Get tweets
     try:
-        tweets = api.search_tweets(q=query, result_type=result_type, count=max_results)
-        print(f"Number of tweets: {len(tweets)}")
+        if from_date and to_date:
+            tweets = api.search_full_archive(
+                query=query, label=label, maxResults=max_results, fromDate=from_date, toDate=to_date
+            )
+        else:
+            tweets = api.search_full_archive(
+                query=query, label=label, maxResults=max_results
+            )
         if not tweets:
             print("No tweets found")
             return 1
@@ -29,6 +35,8 @@ def get_users_from_query(api, query, result_type="mixed", max_results=100):
                 "user_followers_count": twt["user"]["followers_count"],
                 "user_frieds_count": twt["user"]["friends_count"],
                 "user_verified": twt["user"]["verified"],
+                "quote_count": twt["quote_count"],
+                "reply_count": twt["reply_count"],
                 "retweet_count": twt["retweet_count"],
                 "favorite_count": twt["favorite_count"],
                 "text_snippet": twt["text"],
@@ -41,10 +49,10 @@ def get_users_from_query(api, query, result_type="mixed", max_results=100):
         .drop_duplicates(subset="user_screen_name")
     )
     # Save user IDs
-    fname = f"{os.path.abspath(os.getcwd())}{FILES_FOLDER_NAME}{query.replace(' ', '_')}_{strftime('%Y_%m_%d__%H_%M_%S', gmtime())}.csv"
+    fname = f"{os.path.abspath(os.getcwd())}{FILES_FOLDER_NAME}{query.replace(' ', '_')}_{from_date}_{to_date}.csv"
     sorted_df["user_id_str"].to_csv(fname, header=False, index=False)
     # Save tweet data
-    td_fname = f"{os.path.abspath(os.getcwd())}{FILES_FOLDER_NAME}tweet_data_{query.replace(' ', '_')}_{strftime('%Y_%m_%d__%H_%M_%S', gmtime())}.csv" 
+    td_fname = f"{os.path.abspath(os.getcwd())}{FILES_FOLDER_NAME}tweet_data_{query.replace(' ', '_')}_{from_date}_{to_date}.csv" 
     sorted_df.to_csv(td_fname, header=False, index=False)
 
     print(
@@ -56,5 +64,9 @@ def get_users_from_query(api, query, result_type="mixed", max_results=100):
 
 api = get_twitter_api()
 q = input("Provide a Twitter search query:\n")
-get_users_from_query(api, query=q, result_type="mixed",
-                     max_results=100)
+from_date = strftime("%Y%m%d%H%M", strptime(
+    input("Provide a start date (format: YYYY-MM-DD) or click Enter to skip:\n"), "%Y-%m-%d"))
+to_date = strftime("%Y%m%d%H%M", strptime(
+    input("Provide an end date (not included) (format: YYYY-MM-DD) or click Enter to skip:\n"), "%Y-%m-%d"))
+get_users_from_query(api, query=q, label="dev",
+                     max_results=100, from_date=from_date, to_date=to_date)

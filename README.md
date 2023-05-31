@@ -49,10 +49,6 @@ Let's find some users who tweeted about Joe Biden in January 2017. The script pr
 ```
 Provide a Twitter search query:
 joe biden
-Provide a start date (format: YYYY-MM-DD) or click Enter to skip:
-2017-01-01
-Provide an end date (not included) (format: YYYY-MM-DD) or click Enter to skip:
-2017-03-01
 2023-04-08 10:27:18     Extracted 97 users from search query
 Now run load.py, choose route 'c', depth '0', and insert this filename:
 
