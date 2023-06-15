@@ -44,7 +44,7 @@ See the usage example below for more details!
 
 ### Step 1. `search.py`
 
-Let's find some users who tweeted about Joe Biden in January 2017. The script prompts us for input:
+Let's find some users who tweeted about Joe Biden in the past week. The script prompts us for input:
 
 ```
 Provide a Twitter search query:
@@ -56,6 +56,8 @@ Now run load.py, choose route 'c', depth '0', and insert this filename:
 ```
 
 It found 97 users and recorded their IDs to a CSV file.
+
+Note: searching the full archive (with date ranges) using Premium API has been deprecated by Twitter.
 
 ### Step 2. `load.py`
 

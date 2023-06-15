@@ -76,18 +76,21 @@ def explore_graph(Gf, edgelist, cutoff_perc, min_community_size=3):
         print(
             f"Number of members before filtering out community members: {len(in_deg_cent_cutoff)}"
         )
-        # Compute user IDs to explore--filter out community members
-        in_deg_cent_cutoff_f = in_deg_cent_cutoff[
-            in_deg_cent_cutoff["id_str"].apply(lambda x: x not in comm_member_set)
-        ]
-        if len(comm) < min_community_size:
-            failed.update(in_deg_cent_cutoff_f["id_str"])
-            print(
-                f"Excluded {len(in_deg_cent_cutoff_f['id_str'])} users from exploration because of the community's small size ({len(comm)})"
-            )
+        if (len(in_deg_cent_cutoff) == 0):
+            print("There are no users to explore")
         else:
-            to_explore.update(in_deg_cent_cutoff_f["id_str"])
-            print(f"Added {len(in_deg_cent_cutoff_f)} users for exploration from community")
+            # Compute user IDs to explore--filter out community members
+            in_deg_cent_cutoff_f = in_deg_cent_cutoff[
+                in_deg_cent_cutoff["id_str"].apply(lambda x: x not in comm_member_set)
+            ]
+            if len(comm) < min_community_size:
+                failed.update(in_deg_cent_cutoff_f["id_str"])
+                print(
+                    f"Excluded {len(in_deg_cent_cutoff_f['id_str'])} users from exploration because of the community's small size ({len(comm)})"
+                )
+            else:
+                to_explore.update(in_deg_cent_cutoff_f["id_str"])
+                print(f"Added {len(in_deg_cent_cutoff_f)} users for exploration from community")
     fname = f"{job_dir}discover_{job_num}_{str(cutoff_perc).replace('.', '_')}.csv"
     with open(fname, "w") as f:
         f.writelines([i + "\n" for i in to_explore])

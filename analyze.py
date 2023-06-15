@@ -10,7 +10,7 @@ from utils.twitter_auth import get_twitter_api
 
 def initialize_graph(edgelist):
     """
-    Initialize and return NetworkX graph object. The edgelist DataFrame must have columns "source" and "target".
+    Initialize NetworkX graph object.
     """
     G = nx.from_pandas_edgelist(
         edgelist, source="source", target="target", create_using=nx.DiGraph
@@ -50,7 +50,7 @@ def get_in_degree_centrality_with_nodelist(G, job_dir, fields=[], nodelist_name=
 
 def get_id_list(edgelist):
     """
-    Return list of Twitter IDs from edgelist.
+    Get list of Twitter IDs from edgelist.
     """
     s1 = set(edgelist["source"].unique())
     s2 = set(edgelist["target"].unique())
@@ -59,10 +59,11 @@ def get_id_list(edgelist):
 
 def make_nodelist(api, job_dir, ids, fields=[]):
     """
-    Load nodelist--Twitter data about specified IDs. ids must be an iterable. API reference(s): https://docs.tweepy.org/en/stable/api.html#tweepy.API.get_user and https://developer.twitter.com/en/docs/twitter-api/v1/data-dictionary/object-model/user
+    Load nodelist--Twitter data about specified IDs. 
+    API reference(s): https://docs.tweepy.org/en/stable/api.html#tweepy.API.get_user and https://developer.twitter.com/en/docs/twitter-api/v1/data-dictionary/object-model/user
     """
     # Load default value of fields
-    if not fields:
+    if not fields or len(fields) == 0:
         fields = [
             "id_str",
             "name",
@@ -76,12 +77,11 @@ def make_nodelist(api, job_dir, ids, fields=[]):
     for id in ids:
         try:
             user = api.get_user(user_id=id)._json
-            # Construct nodelist, list of dicts
-            # Dict key names correspond to field names from user object
-            # Grab fields specified in var fields
+            # Construct nodelist, list of dicts. Dict key names correspond to field names from user object. Grab fields specified in var fields
             nodelist.append({field: user[field] for field in fields})
+            sleep(0.1)
         except Exception as e:
-            print(e)
+            print(repr(e))
             nodelist_failed.add(id)
     print(f"{strftime('%Y-%m-%d %H:%M:%S', gmtime())}\tExtracted nodelist")
     # Save nodelist to CSV
@@ -95,7 +95,6 @@ def make_nodelist(api, job_dir, ids, fields=[]):
 def set_attributes_from_nodelist(G, job_dir, nodelist_name=""):
     """
     Set node attributes for nodes in G.
-    Requires: generating nodelist with make_nodelist()
     """
     # Load nodelist from file
     nodelist = pd.read_csv(
@@ -154,7 +153,6 @@ def generate_new_nodelist(edgelist, job_dir):
 def analyze_network_structure(G):
     """
     Analyze the structure of network G.
-    Data type(s):\n\tG : nx.DiGraph
     """
     n_nodes = G.number_of_nodes()
     n_edges = G.number_of_edges()
@@ -191,7 +189,6 @@ def analyze_network_structure(G):
 def get_largest_component(G):
     """
     Find and return the largest strongly connected component of G.
-    Data type(s):\n\tG : nx.DiGraph
     """
     return G.subgraph(max(nx.strongly_connected_components(G), key=len))
 
@@ -210,7 +207,7 @@ if filters:
     if "b" in filters:
         edgelist = filter_out_original(edgelist, job_dir_og=job_dir)
 
-# Load nodelist
+# Load edgelist
 job_dir = get_edgelist_job_dir_path(job_num)
 # If nodelist doesn't exist
 if not os.path.exists(f"{job_dir}nodelists/nodelist.csv"):

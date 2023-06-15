@@ -63,13 +63,12 @@ def process_chunk(api, chunk, job_dir, max_chunk_size=14, friends_limit=15000):
     failed = []
     # Initialize counters
     req_left = max_chunk_size  # min(max_chunk_size, len(chunk))
-    max_requests_per_id = 3
+    req_per_id_left = 3
     cur_cursor = -1
     explored = set()
     with open(f"{job_dir}{EDGELIST_FNAME}", "a") as f:
         writer = csv.writer(f)
-        while len(chunk) > 0 and (req_left > 3 or (req_left < 4 and max_requests_per_id == 3)):
-            # Pop ID from frontier
+        while len(chunk) > 0 and (req_left > 2 or req_left >= req_per_id_left):
             id = chunk.pop(0)
             print("Selected ID:", id)
             res = []
@@ -84,6 +83,7 @@ def process_chunk(api, chunk, job_dir, max_chunk_size=14, friends_limit=15000):
                 sleep(2)
             except Exception as e:
                 print("Exception:", repr(str(e)))
+                print("Response:", repr(res))
                 print(
                     f"{strftime('%Y-%m-%d %H:%M:%S', gmtime())}\tFailed to load friends of ID {id}"
                 )
@@ -92,42 +92,50 @@ def process_chunk(api, chunk, job_dir, max_chunk_size=14, friends_limit=15000):
             req_left -= 1
 
             # If next cursor isn't 0 (end of following list not reached)
-            if res[1][1] != 0:
-                if max_requests_per_id == 3:
-                    # Get total number of accounts followed by user
-                    user = api.get_user(user_id=id)._json
-                    sleep(1)
-                    print(f"User follows {user['friends_count']} accounts")
-                    if user["friends_count"] > friends_limit:
-                        failed.append(
-                            {"id_str": id, "error_message": f"User follows over {friends_limit} accounts"}
-                        )
-                        print(
-                            f"User {id} excluded because they follow over 15000 accounts")
-                        # Reset counters
-                        cur_cursor = -1
-                        max_requests_per_id = 3
+            is_res_valid = False
+            try:
+                if res[0][0]:
+                    is_res_valid = True
+            except:
+                pass
+                
+            if is_res_valid:
+                if res[1][1] != 0:
+                    if req_per_id_left == 3:
+                        # Get total number of accounts followed by user
+                        user = api.get_user(user_id=id)._json
+                        sleep(1)
+                        print(f"User follows {user['friends_count']} accounts")
+                        if user["friends_count"] > friends_limit:
+                            failed.append(
+                                {"id_str": id, "error_message": f"User follows over {friends_limit} accounts"}
+                            )
+                            print(
+                                f"User {id} excluded because they follow over {friends_limit} accounts")
+                            # Reset cursor and counter
+                            cur_cursor = -1
+                            req_per_id_left = 3
+                        else:
+                            cur_cursor = res[1][1]
+                            chunk.insert(0, id)
+                            req_per_id_left -= 1
+                            for friend_id in res[0]:
+                                writer.writerow([id, friend_id])
+                            explored.add(id)
                     else:
                         cur_cursor = res[1][1]
                         chunk.insert(0, id)
-                        max_requests_per_id -= 1
+                        req_per_id_left -= 1
                         for friend_id in res[0]:
                             writer.writerow([id, friend_id])
                         explored.add(id)
                 else:
-                    cur_cursor = res[1][1]
-                    chunk.insert(0, id)
-                    max_requests_per_id -= 1
+                    # Reset counters
+                    cur_cursor = -1
+                    req_per_id_left = 3
                     for friend_id in res[0]:
                         writer.writerow([id, friend_id])
                     explored.add(id)
-            else:
-                # Reset counters
-                cur_cursor = -1
-                max_requests_per_id = 3
-                for friend_id in res[0]:
-                    writer.writerow([id, friend_id])
-                explored.add(id)
 
     # Save failed to file
     pd.DataFrame(failed).to_csv(
