@@ -4,6 +4,26 @@
 
 This small Python app allows you to easily download follows (who-follows-whom) within a small Twitter network, plus perform a basic social network analysis (SNA) of the network, and visualize it.
 
+The output:
+
+<ul>
+<li>
+Attributes for network nodes (in-degree, follower count etc.)
+<br />
+<img src="https://github.com/vls9/dictus/assets/129585843/3be923d1-24c6-405d-85ab-d7f6e1d4d9da" alt="create1" width="400">
+</li>
+<li>
+Basic SNA parameters
+<br />
+<img src="https://github.com/vls9/dictus/assets/129585843/f459ccf9-0835-4d51-beaa-50570910b569" alt="stats" width="400">
+</li>
+<li>
+A simple network graph
+<br />
+<img src="https://github.com/vls9/dictus/assets/129585843/dd314205-1468-4337-8f57-81fd312a90a8" alt="graph" width="400">
+</li>
+</ul>
+
 ## Prerequisites
 
 You need a Twitter developer account. If you don't have one, [apply here](https://developer.twitter.com/en/portal/petition/essential/basic-info).
@@ -55,7 +75,9 @@ Now run load.py, choose route 'c', depth '0', and insert this filename:
 [working_directory]/files/joe_biden_201701010000_201703010000.csv
 ```
 
-It found 97 users and recorded their IDs to a CSV file.
+It found 97 users and recorded their IDs to a CSV file:
+<br />
+<img src="https://github.com/vls9/dictus/assets/129585843/3cf9363a-fe63-4481-8e1c-9c1c8a027c45" alt="ids" width="200">
 
 Note: searching the full archive (with date ranges) using Premium API has been deprecated by Twitter.
 
@@ -102,22 +124,10 @@ The entire ID list may be too large to be processed at once, so the script will 
 
 Note that due to another rate limit, users who follow over 15,000 accounts (need more than 3 requests per user ID) will be excluded and recorded in a separate file.
 
-The output:
+The output file:
+<br />
+<img src="https://github.com/vls9/dictus/assets/129585843/c89b3d5e-2029-441c-b547-e03477dbcdd7" alt="links" width="300">
 
-```
-2023-04-08 10:46:03     Processing job 6
-2023-04-08 10:46:03     Loaded chunk from ID list, starting at line 0 of max size 14
-Selected ID: 184136149
-2023-04-08 10:46:04     Extracted 5000 friends of ID 184136149
-User follows 8528 accounts
-Selected ID: 184136149
-2023-04-08 10:46:07     Extracted 3528 friends of ID 184136149
-Selected ID: 24920395
-2023-04-08 10:46:10     Extracted 603 friends of ID 24920395
-[...]
-Sent 12 requests to explore 10 users. 0 users were excluded
-2023-04-08 11:01:37     Chunk processed
-```
 
 The script explored 10 users (out of 97), sending 12 requests.
 
@@ -213,7 +223,9 @@ We see that filtering out outsiders reduced the list of 170K follows to just 74.
 
 Then, the results of simple SNA are provided.
 
-Finally, a simple network visualization will be saved in the `viz` folder inside the job directory.
+Finally, a simple network visualization will be saved in the `viz` folder inside the job directory:
+<br />
+<img src="https://github.com/vls9/dictus/assets/129585843/dd314205-1468-4337-8f57-81fd312a90a8" alt="graph" width="400">
 
 ## Important note
 
